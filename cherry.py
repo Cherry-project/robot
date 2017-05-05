@@ -20,9 +20,9 @@ from pypot.primitive.move import MoveRecorder
 
 from primitives.movePlayer import PlayMove
 
-from speak import *
+from primitives.speak import *
 
-from voice import Voice
+from primitives.voice import Voice
 
 
 class Cherry(AbstractPoppyCreature):
