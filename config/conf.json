@@ -1,11 +1,15 @@
 {
 	"server":{
-		"addr":"127.0.0.1",
+		"addr":"95.85.41.131",
 		"port":"8080"
 	},
 	"robot":{
 		"addr":"127.0.0.1",
 		"port":"8000",
 		"name":"Cherry"
+	},
+	"ssh":{
+		"host":"rproquot@95.85.41.131",
+		"port":8081
 	}
 }

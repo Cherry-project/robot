@@ -114,7 +114,7 @@ class Cherry(AbstractPoppyCreature):
         json_data.close()
         
         ip = data['robot']['addr']
-        port = data['robot']['port']
+        port = cls.port
         
         try:
             server = HTTPRobotServer(cls.robot, host=str(ip), port=str(port))
@@ -155,10 +155,44 @@ class Cherry(AbstractPoppyCreature):
         except:
             print "Request error"
         else:
-            # Voice.silent(text="Connexion request sent",lang='en')
             pass
 
-    
+    @classmethod
+    def connectssh(cls):
+        json_data = open('./config/conf.json')
+        data = json.load(json_data)
+        json_data.close()
+
+        ip = data['server']['addr']
+        port = data['server']['port']
+        name = data['robot']['name']
+        host = data['ssh']['host']
+        remotePort = data['ssh']['port']
+
+        print "Starting to ping the server"
+
+        response = os.system("ping -c 1 " + str(ip))
+        if response != 0:
+            while response != 0:
+                response = os.system("ping -c 1 " + str(ip))
+                time.sleep(5)
+        url = "http://"+str(ip)+"/ssh/setupssh?id="+str(name)
+        print url
+        try: 
+            r = requests.get(url)
+        except:
+            print "Request error"
+        else:
+            result = json.loads(r.text.split("\n")[0])
+            if result['port'] > remotePort:
+                remotePort = result['port']
+            print "ssh -R 8000:localhost:"+ str(remotePort) +" "+ host
+            os.system("ssh -R 8000:localhost:"+ str(remotePort) +" "+ host)
+            cls.port = remotePort
+            pass
+        return cls.port
+
+
     @classmethod
     def learn(cls):
         move = MoveRecorder(cls.robot,100,cls.robot.motors)
