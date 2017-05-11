@@ -11,7 +11,7 @@ class Voice(object):
 		
 		#print HTMLParser().unescape(text)
 		# Proceed special caracteres
-		tts = gTTS(HTMLParser().unescape(text), lang=lang)
+		tts = gTTS(HTMLParser().unescape(text).encode('utf-8'), lang=lang)
 		tts.save("./tmp/temp.mp3")
 		
 		pygame.mixer.init()
