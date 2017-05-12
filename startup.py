@@ -1,5 +1,5 @@
-from cherry import *
-robot=Cherry.setup()
-port=Cherry.connectssh()
-Cherry.serve(port)
+from cherryssh import *
+Cherry.setupssh()
+Cherry.connectssh()
+Cherry.servessh()
 

@@ -28,7 +28,7 @@ from primitives.voice import Voice
 class Cherry(AbstractPoppyCreature):
          
     @classmethod
-    def setup(cls):
+    def setupssh(cls):
 
         print "Robot setup started :"
 
@@ -108,43 +108,57 @@ class Cherry(AbstractPoppyCreature):
         return cls.robot
 
     @classmethod
-    def connect(cls):
+    def connectssh(cls):
         json_data = open('./config/conf.json')
         data = json.load(json_data)
         json_data.close()
 
         ip = data['server']['addr']
         port = data['server']['port']
+
+        host = data['ssh']['host']
+        remotePort = data['ssh']['port']
+
         name = data['robot']['name']
 
         print "Starting to ping the server"
 
         response = os.system("ping -c 1 " + str(ip))
+
         if response != 0:
             while response != 0:
                 response = os.system("ping -c 1 " + str(ip))
                 time.sleep(5)
 
-        url = "http://"+str(ip)+":"+str(port)+"/setup?id="+str(name)
-        print url
+        url = "http://"+str(ip)+"/ssh/setupssh?id="+str(name)
+
+        # print url
+
         try: 
-            requests.get(url)
+            r = requests.get(url)
         except:
             print "Request error"
         else:
+            result = json.loads(r.text.split("\n")[0])
+            if result['port'] > remotePort:
+                remotePort = result['port']
+            print "ssh -R "+ str(remotePort) +":localhost:"+ str(remotePort) +" "+ host + " &"
+            os.system("ssh -R "+ str(remotePort) +":localhost:"+ str(remotePort) +" "+ host + " &")
+            cls.port = remotePort
             pass
+        return cls.port
 
     @classmethod
-    def serve(cls):
+    def servessh(cls):
         json_data = open('./config/conf.json')
         data = json.load(json_data)
         json_data.close()
         
         ip = data['robot']['addr']
-        port = data['robot']['port']
+        print cls.port
         
         try:
-            server = HTTPRobotServer(cls.robot, host=str(ip), port=str(port))
+            server = HTTPRobotServer(cls.robot, host=str(ip), port=str(cls.port))
         except:
             print "Unable to create server object"
         else:
@@ -157,67 +171,6 @@ class Cherry(AbstractPoppyCreature):
                 print "server started successfully"
                 # Voice.silent(text="Server working",lang='en')
 
-    @classmethod
-    def learn(cls):
-        move = MoveRecorder(cls.robot,100,cls.robot.motors)
-        cls.robot.compliant = True
-        raw_input("Press enter to start recording a Move.")
-        
-        for x in xrange(3,0,-1):
-            print x
-            time.sleep(1)
-
-        move.start()
-        raw_input("Press again to stop the recording.")
-        move.stop()
-
-        for m in cls.robot.motors:
-            m.compliant = False
-            m.goal_position = 0
-
-        print "List of already taken primitives : "
-
-        os.chdir('./moves')
-        for file in glob.glob("*.move"):
-            print(os.path.splitext(file)[0])
-        os.chdir('../')
-
-        move_name = raw_input("Enter the name of this sick move : ")
-        move_name = move_name+".move"
-
-        with open("./moves/"+move_name, 'w') as f:
-            try:
-                move.move.save(f)
-            except:
-                print "Unable to save this move, sorry"
-            else:
-                print "Move successfully saved !"
-        try:
-            cls.robot.attach_primitive(PlayMove(cls.robot,movement=move_name),move_name)
-        except Exception as e:
-            raise
-        else:
-            print "Move successfully attached to the robot !"
-        finally:
-            pass
-            
-    @classmethod
-    def forget(cls,move_name):
-        raw_input("Are you sure ? Press enter to delete this move")
-        try:
-            os.remove("./moves/"+move_name+".move")
-        except Exception as e:
-            raise
-        else:
-            print move_name+" successfully forgotten !"
-        finally:
-            pass
-
-    @classmethod
-    def exit(cls):
-        print "Exiting Cherry server process"
-        Voice.silent(text="Au revoir !",lang='fr')
-        os.system("sudo kill `sudo lsof -t -i:8000`")
 
 
 
