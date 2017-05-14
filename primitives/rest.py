@@ -38,7 +38,7 @@ class Rest(pypot.primitive.Primitive):
 		name = data['robot']['name']
 
 		# create the url for the request
-		url = "http://"+str(ip)+":"+str(port)+"/robot/behavefinished/"
+		url = "http://"+str(ip)+"/robot/behavefinished/"
 
 		# send the post with the robot name request to the server
 		try: 

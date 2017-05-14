@@ -108,6 +108,35 @@ class Cherry(AbstractPoppyCreature):
         return cls.robot
 
     @classmethod
+    def serve(cls):
+        json_data = open('./config/conf.json')
+        data = json.load(json_data)
+        json_data.close()
+        
+        ip = data['robot']['addr']
+        port = data['robot']['port']
+
+        if port > 1024 & port != 8080:
+            try:
+                server = HTTPRobotServer(cls.robot, host=str(ip), port=str(port))
+            except:
+                print "Unable to create server object"
+            else:
+                print "Server configuration done"
+                try:
+                    threading.Thread(target=lambda: server.run()).start()
+                except:
+                    print "Unable to start server"
+                else:
+                    print "Server started successfully on port " + str(port)
+                    # Voice.silent(text="Server working",lang='en')
+                pass
+        else:
+            print "Server not started because of a connectssh error !"
+            Voice.silent(text="Server not started",lang='en')
+            pass
+
+    @classmethod
     def connect(cls):
         json_data = open('./config/conf.json')
         data = json.load(json_data)
@@ -116,6 +145,8 @@ class Cherry(AbstractPoppyCreature):
         ip = data['server']['addr']
         port = data['server']['port']
         name = data['robot']['name']
+        ipR = data['robot']['addr']
+        portR = data['robot']['port']
 
         print "Starting to ping the server"
 
@@ -125,7 +156,7 @@ class Cherry(AbstractPoppyCreature):
                 response = os.system("ping -c 1 " + str(ip))
                 time.sleep(5)
 
-        url = "http://"+str(ip)+":"+str(port)+"/setup?id="+str(name)
+        url = "http://"+str(ip)+":"+str(port)+"/setup?id="+str(name)+"&port="+str(portR)+"&ip="+ipR
         print url
         try: 
             requests.get(url)
@@ -135,27 +166,51 @@ class Cherry(AbstractPoppyCreature):
             pass
 
     @classmethod
-    def serve(cls):
+    def connectssh(cls):
         json_data = open('./config/conf.json')
         data = json.load(json_data)
         json_data.close()
-        
-        ip = data['robot']['addr']
-        port = data['robot']['port']
-        
-        try:
-            server = HTTPRobotServer(cls.robot, host=str(ip), port=str(port))
+
+        ip = data['ssh']['addr']
+        name = data['robot']['name']
+        host = data['ssh']['host']
+        remotePort = data['ssh']['port']
+
+        print "Starting to ping the server"
+
+        response = os.system("ping -c 1 " + str(ip))
+        if response != 0:
+            while response != 0:
+                response = os.system("ping -c 1 " + str(ip))
+                time.sleep(5)
+        url = "http://"+str(ip)+"/ssh/setupssh?id="+str(name)
+        print url
+        try: 
+            r = requests.get(url)
         except:
-            print "Unable to create server object"
+            print "Request error"
         else:
-            print "Server configuration done"
-            try:
-                threading.Thread(target=lambda: server.run()).start()
-            except:
-                print "Unable to start server"
+            result = json.loads(r.text.split("\n")[0])
+            print result['port']
+            if result['port'] > 1024 & result['port'] != 8080:
+                remotePort = result['port']
+                os.system("ssh -f -N -T -R "+ str(remotePort) +":localhost:"+ str(remotePort) +" "+ host)
+
+                data['ssh']['port'] = remotePort
+                data['robot']['port'] = remotePort
+
+                #print data
+                with open('./config/conf.json','w') as f:
+                    json.dump(data, f)
+                pass
             else:
-                print "server started successfully"
-                # Voice.silent(text="Server working",lang='en')
+                print "Connect ssh failed, " + result['error']
+                data['ssh']['port'] = 0
+                data['robot']['port'] = 0
+                with open('./config/conf.json','w') as f:
+                    json.dump(data, f)
+                Voice.silent(text="Connect ssh failed",lang='en')
+                pass
 
     @classmethod
     def learn(cls):

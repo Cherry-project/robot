@@ -31,7 +31,7 @@ class Voice(object):
 		name = data['robot']['name']
 
 		# create the url for the request
-		url = "http://"+str(ip)+":"+str(port)+"/robot/speakfinished/"
+		url = "http://"+str(ip)+"/robot/speakfinished/"
 
 		# send the post with the robot name request to the server
 		try: 
