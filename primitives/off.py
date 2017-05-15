@@ -30,7 +30,7 @@ class Off(pypot.primitive.Primitive):
 
 		# we need the server addr+port and the robot name so the server know which robot has ended his move
 		ip = data['server']['addr']
-		port = data['server']['port']
+		#port = data['server']['port']
 		name = data['robot']['name']
 
 		# create the url for the request

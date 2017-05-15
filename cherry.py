@@ -195,6 +195,12 @@ class Cherry(AbstractPoppyCreature):
             if result['port'] > 1024 & result['port'] != 8080:
                 remotePort = result['port']
                 os.system("ssh -f -N -T -R "+ str(remotePort) +":localhost:"+ str(remotePort) +" "+ host)
+                #if secure request from robot to server
+                #os.system("ssh -f -N -T -L 8080:localhost:8080 "+ host)
+                #data['server']['addr'] = "127.0.0.1:8080"
+                #else 
+                #data['server']['addr'] = "95.85.41.131/ssh"
+
 
                 data['ssh']['port'] = remotePort
                 data['robot']['port'] = remotePort
@@ -272,7 +278,14 @@ class Cherry(AbstractPoppyCreature):
     def exit(cls):
         print "Exiting Cherry server process"
         Voice.silent(text="Au revoir !",lang='fr')
-        os.system("sudo kill `sudo lsof -t -i:8000`")
+        json_data = open('./config/conf.json')
+        data = json.load(json_data)
+        json_data.close()
+        time.sleep(2)
+        os.system("sudo pkill -x ssh")
+        os.system("sudo kill -9 `sudo lsof -t -i:" + str(data['robot']['port']) + "`")
+
+
 
 
 

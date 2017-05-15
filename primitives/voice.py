@@ -3,15 +3,19 @@ import json
 from gtts import gTTS
 import pygame
 from HTMLParser import HTMLParser
-
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 class Voice(object):
 	@classmethod
 	def go(cls,text,lang):
 		
-		#print HTMLParser().unescape(text)
+
 		# Proceed special caracteres
-		tts = gTTS(HTMLParser().unescape(text).encode('utf-8'), lang=lang)
+		#print unquote(HTMLParser().unescape(text)).encode('utf-8')
+		
+		tts = gTTS(HTMLParser().unescape(text).decode().encode('utf-16'),lang=lang)
 		tts.save("./tmp/temp.mp3")
 		
 		pygame.mixer.init()
@@ -27,7 +31,7 @@ class Voice(object):
 
 		# we need the server addr+port and the robot name so the server know which robot has ended his move
 		ip = data['server']['addr']
-		port = data['server']['port']
+		#port = data['server']['port']
 		name = data['robot']['name']
 
 		# create the url for the request
