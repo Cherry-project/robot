@@ -296,6 +296,7 @@ class Cherry(AbstractPoppyCreature):
             if data['type'] == "ssh":
                 os.system("sudo pkill -x ssh")
             os.system("sudo kill -9 `sudo lsof -t -i:" + str(data['robot']['port']) + "`")
+            os.system("sudo kill -9 $(ps -ax | grep python | awk '{print $1}')")
             sys.exit()
 
 
