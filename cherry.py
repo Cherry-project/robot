@@ -292,13 +292,11 @@ class Cherry(AbstractPoppyCreature):
         except:
             print "Request error"
         else:
-            pass
-
-        time.sleep(2)
-        if data['type'] == "ssh":
-            os.system("sudo pkill -x ssh")
-        os.system("sudo kill -9 `sudo lsof -t -i:" + str(data['robot']['port']) + "`")
-
+            time.sleep(2)
+            if data['type'] == "ssh":
+                os.system("sudo pkill -x ssh")
+            os.system("sudo kill -9 `sudo lsof -t -i:" + str(data['robot']['port']) + "`")
+            sys.exit()
 
 
 

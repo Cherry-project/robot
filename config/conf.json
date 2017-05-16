@@ -1,1 +1,1 @@
-{"type":"ssh","robot": {"port": 1025, "name": "Cherry", "addr": "127.0.0.1"}, "ssh": {"host": "rproquot@95.85.41.131", "addr": "95.85.41.131", "port": 1025}, "server": {"addr": "127.0.0.1", "port": 8080}}
+{"type": "ssh", "robot": {"addr": "127.0.0.1", "name": "Cherry", "port": 1025}, "ssh": {"host": "rproquot@95.85.41.131", "addr": "95.85.41.131", "port": 1025}, "server": {"addr": "127.0.0.1", "port": 8080}}
