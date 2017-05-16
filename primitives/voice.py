@@ -14,16 +14,44 @@ class Voice(object):
 
 		# Proceed special caracteres
 		print HTMLParser().unescape(text).decode().encode('utf-8')
-		
-		tts = gTTS(HTMLParser().unescape(text).decode().encode('utf-8'),lang=lang)
-		tts.save("./tmp/temp.mp3")
-		
-		pygame.mixer.init()
-		pygame.mixer.music.load("./tmp/temp.mp3")
-		pygame.mixer.music.play()
+		text_encoded = HTMLParser().unescape(text).decode().encode('utf-8')
 
-		while pygame.mixer.music.get_busy():
-			pass
+		if len(text_encoded) >= 100:
+			text_split_list = text_encoded.split(" ")
+			text_split = ""
+			text_list = []
+
+			for phrase_split in text_split_list:
+				if len(phrase_split + " ") + len(text_split) < 100:
+					text_split += phrase_split + " "
+				else:
+					text_list.append(text_split)
+					text_split = ""
+					if len(phrase_split + " ") + len(text_split) < 100:
+						text_split += phrase_split + " "
+			if len(text_split) != 0:
+				text_list.append(text_split)
+				
+			for phrase in text_list:
+				tts = gTTS(phrase,lang=lang)
+				tts.save("./tmp/temp.mp3")		
+				pygame.mixer.init()
+				pygame.mixer.music.load("./tmp/temp.mp3")
+				pygame.mixer.music.play()
+
+				while pygame.mixer.music.get_busy():
+					pass
+		else:
+			tts = gTTS(text_encoded,lang=lang)
+			tts.save("./tmp/temp.mp3")		
+			pygame.mixer.init()
+			pygame.mixer.music.load("./tmp/temp.mp3")
+			pygame.mixer.music.play()
+
+			while pygame.mixer.music.get_busy():
+				pass
+
+		
 		# load the configuration file that give the server addr and port for requests 
 		json_data = open('./config/conf.json')
 		data = json.load(json_data)

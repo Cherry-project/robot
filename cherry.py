@@ -99,7 +99,7 @@ class Cherry(AbstractPoppyCreature):
 
         # Voice.silent(text="Setup done",lang='en')
         try:
-            Voice.silent(text="Bonjour, je m'appelle "+name+", ravi de vous rencontrer.",lang='fr')
+            Voice.silent(text="Bonjour, je m'appelle "+name+".",lang='fr')
         except:
             print "WARNING : no response from google tts engine : Check internet connectivity"
         else:
