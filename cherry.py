@@ -116,7 +116,7 @@ class Cherry(AbstractPoppyCreature):
         ip = data['robot']['addr']
         port = data['robot']['port']
 
-        if port > 1024 & port != 8080:
+        if port > 1024 and port != 8080:
             try:
                 server = HTTPRobotServer(cls.robot, host=str(ip), port=str(port))
             except:
@@ -148,6 +148,10 @@ class Cherry(AbstractPoppyCreature):
         ipR = data['robot']['addr']
         portR = data['robot']['port']
 
+        data['type'] = "local"
+        with open('./config/conf.json','w') as f:
+            json.dump(data, f)
+
         print "Starting to ping the server"
 
         response = os.system("ping -c 1 " + str(ip))
@@ -156,7 +160,7 @@ class Cherry(AbstractPoppyCreature):
                 response = os.system("ping -c 1 " + str(ip))
                 time.sleep(5)
 
-        url = "http://"+str(ip)+":"+str(port)+"/setup?id="+str(name)+"&port="+str(portR)+"&ip="+ipR
+        url = "http://"+str(ip)+":"+str(port)+"/setup?id="+str(name)+"&port="+str(portR)+"&ip="+str(ipR)
         print url
         try: 
             requests.get(url)
@@ -175,6 +179,7 @@ class Cherry(AbstractPoppyCreature):
         name = data['robot']['name']
         host = data['ssh']['host']
         remotePort = data['ssh']['port']
+        serverPort = data['server']['port']
 
         print "Starting to ping the server"
 
@@ -192,31 +197,25 @@ class Cherry(AbstractPoppyCreature):
         else:
             result = json.loads(r.text.split("\n")[0])
             print result['port']
-            if result['port'] > 1024 & result['port'] != 8080:
+            if result['port'] > 1024 and result['port'] != 8080:
                 remotePort = result['port']
                 os.system("ssh -f -N -T -R "+ str(remotePort) +":localhost:"+ str(remotePort) +" "+ host)
-                #if secure request from robot to server
-                #os.system("ssh -f -N -T -L 8080:localhost:8080 "+ host)
-                #data['server']['addr'] = "127.0.0.1:8080"
-                #else 
-                #data['server']['addr'] = "95.85.41.131/ssh"
+                os.system("ssh -f -N -T -L "+ str(serverPort) +":localhost:"+ str(serverPort) +" "+ host)
 
-
+                data['server']['addr'] = "127.0.0.1"
                 data['ssh']['port'] = remotePort
                 data['robot']['port'] = remotePort
 
-                #print data
-                with open('./config/conf.json','w') as f:
-                    json.dump(data, f)
-                pass
             else:
                 print "Connect ssh failed, " + result['error']
                 data['ssh']['port'] = 0
                 data['robot']['port'] = 0
-                with open('./config/conf.json','w') as f:
-                    json.dump(data, f)
                 Voice.silent(text="Connect ssh failed",lang='en')
-                pass
+                
+            data['type'] = "ssh"
+            with open('./config/conf.json','w') as f:
+                json.dump(data, f)
+            pass
 
     @classmethod
     def learn(cls):
@@ -281,8 +280,23 @@ class Cherry(AbstractPoppyCreature):
         json_data = open('./config/conf.json')
         data = json.load(json_data)
         json_data.close()
+
+        name = data['robot']['name']
+        ip = data['server']['addr']
+        port = data['server']['port']
+        url = "http://"+str(ip)+":"+str(port)+"/remove?id="+str(name)
+
+        print url
+        try: 
+            requests.get(url)
+        except:
+            print "Request error"
+        else:
+            pass
+
         time.sleep(2)
-        os.system("sudo pkill -x ssh")
+        if data['type'] == "ssh":
+            os.system("sudo pkill -x ssh")
         os.system("sudo kill -9 `sudo lsof -t -i:" + str(data['robot']['port']) + "`")
 
 
