@@ -8,9 +8,9 @@ class Off(pypot.primitive.Primitive):
 
 	def run(self):
 		try:
-			self.robot.upper_body_idle_motion.stop()
-			self.robot.torso_idle_motion.stop()
-			# self.robot.head_idle_motion.stop()
+			self.robot.motion_upper_body_idle.stop()
+			self.robot.motion_torso_idle.stop()
+			# self.robot.motion_head_idle.stop()
 		except:
 			pass
 		else:

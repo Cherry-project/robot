@@ -89,9 +89,9 @@ class Cherry(AbstractPoppyCreature):
             print "Primitives attached successfully"       
         
         try:
-            cls.robot.torso_idle_motion.start()
-            cls.robot.upper_body_idle_motion.start()
-            # cls.robot.head_idle_motion.start()
+            cls.robot.motion_torso_idle.start()
+            cls.robot.motion_upper_body_idle.start()
+            # cls.robot.motion_head_idle.start()
         except Exception as e:
             raise
         else:
@@ -99,7 +99,7 @@ class Cherry(AbstractPoppyCreature):
 
         # Voice.silent(text="Setup done",lang='en')
         try:
-            Voice.silent(text="Bonjour, je m'appelle "+name+", ravi de vous rencontrer.",lang='fr')
+            Voice.silent(text="Bonjour, je m'appelle "+name+".",lang='fr')
         except:
             print "WARNING : no response from google tts engine : Check internet connectivity"
         else:
@@ -115,20 +115,26 @@ class Cherry(AbstractPoppyCreature):
         
         ip = data['robot']['addr']
         port = data['robot']['port']
-        
-        try:
-            server = HTTPRobotServer(cls.robot, host=str(ip), port=str(port))
-        except:
-            print "Unable to create server object"
-        else:
-            print "Server configuration done"
+
+        if port > 1024 and port != 8080:
             try:
-                threading.Thread(target=lambda: server.run()).start()
+                server = HTTPRobotServer(cls.robot, host=str(ip), port=str(port))
             except:
-                print "Unable to start server"
+                print "Unable to create server object"
             else:
-                print "server started successfully"
-                # Voice.silent(text="Server working",lang='en')
+                print "Server configuration done"
+                try:
+                    threading.Thread(target=lambda: server.run()).start()
+                except:
+                    print "Unable to start server"
+                else:
+                    print "Server started successfully on port " + str(port)
+                    # Voice.silent(text="Server working",lang='en')
+                pass
+        else:
+            print "Server not started because of a connectssh error !"
+            Voice.silent(text="Server not started",lang='en')
+            pass
 
     @classmethod
     def connect(cls):
@@ -139,6 +145,12 @@ class Cherry(AbstractPoppyCreature):
         ip = data['server']['addr']
         port = data['server']['port']
         name = data['robot']['name']
+        ipR = data['robot']['addr']
+        portR = data['robot']['port']
+
+        # data['type'] = "local"
+        # with open('./config/conf.json','w') as f:
+        #     json.dump(data, f)
 
         print "Starting to ping the server"
 
@@ -148,21 +160,68 @@ class Cherry(AbstractPoppyCreature):
                 response = os.system("ping -c 1 " + str(ip))
                 time.sleep(5)
 
-        url = "http://"+str(ip)+":"+str(port)+"/setup?id="+str(name)
+        url = "http://"+str(ip)+":"+str(port)+"/setup?id="+str(name)+"&port="+str(portR)+"&ip="+str(ipR)
         print url
+
         try: 
             requests.get(url)
         except:
             print "Request error"
         else:
-            # Voice.silent(text="Connexion request sent",lang='en')
             pass
 
-    
+    @classmethod
+    def connectssh(cls):
+        json_data = open('./config/conf.json')
+        data = json.load(json_data)
+        json_data.close()
+
+        ip = data['ssh']['addr']
+        name = data['robot']['name']
+        host = data['ssh']['host']
+        remotePort = data['ssh']['port']
+        serverPort = data['server']['port']
+
+        print "Starting to ping the server"
+
+        response = os.system("ping -c 1 " + str(ip))
+        if response != 0:
+            while response != 0:
+                response = os.system("ping -c 1 " + str(ip))
+                time.sleep(5)
+        url = "http://"+str(ip)+"/ssh/setupssh?id="+str(name)
+        print url
+        try: 
+            r = requests.get(url)
+        except:
+            print "Request error"
+        else:
+            result = json.loads(r.text.split("\n")[0])
+            print result['port']
+            if result['port'] > 1024 and result['port'] != 8080:
+                remotePort = result['port']
+                os.system("ssh -f -N -T -R "+ str(remotePort) +":localhost:"+ str(remotePort) +" "+ host)
+                os.system("ssh -f -N -T -L "+ str(serverPort) +":localhost:"+ str(serverPort) +" "+ host)
+
+                data['server']['addr'] = "127.0.0.1"
+                data['ssh']['port'] = remotePort
+                data['robot']['port'] = remotePort
+
+            else:
+                print "Connect ssh failed, " + result['error']
+                data['ssh']['port'] = 0
+                data['robot']['port'] = 0
+                Voice.silent(text="Connect ssh failed",lang='en')
+                
+            # data['type'] = "ssh"
+            # with open('./config/conf.json','w') as f:
+            #     json.dump(data, f)
+            # pass
+
     @classmethod
     def learn(cls):
         move = MoveRecorder(cls.robot,100,cls.robot.motors)
-        cls.robot.compliant = True
+        cls.robot.off.start()
         raw_input("Press enter to start recording a Move.")
         
         for x in xrange(3,0,-1):
@@ -219,8 +278,28 @@ class Cherry(AbstractPoppyCreature):
     def exit(cls):
         print "Exiting Cherry server process"
         Voice.silent(text="Au revoir !",lang='fr')
-        os.system("sudo kill `sudo lsof -t -i:8000`")
 
+        json_data = open('./config/conf.json')
+        data = json.load(json_data)
+        json_data.close()
 
+        name = data['robot']['name']
+        ip = data['server']['addr']
+        port = data['server']['port']
+        url = "http://"+str(ip)+":"+str(port)+"/remove?id="+str(name)
+
+        print url
+        try: 
+            requests.get(url)
+        except:
+            print "Request error"
+
+        time.sleep(2)
+        # if data['type'] == "ssh":
+        #     os.system("sudo pkill -x ssh")
+        os.system("sudo pkill -x ssh")
+        os.system("sudo kill -9 `sudo lsof -t -i:" + str(data['robot']['port']) + "`")
+        os.system("sudo kill -9 $(ps -ax | grep python | awk '{print $1}')")
+        sys.exit()
 
 

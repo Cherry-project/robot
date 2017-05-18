@@ -1,0 +1,1 @@
+sudo python -i startuplocal.py
