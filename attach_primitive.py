@@ -23,9 +23,9 @@ def attach_primitives(robot, isCamera=True):
     os.chdir('../')
 
     # Attach Perpetual Movement
-    robot.attach_primitive(UpperBodyIdleMotion(robot, 50), 'upper_body_idle_motion')
-    robot.attach_primitive(HeadIdleMotion(robot, 50), 'head_idle_motion')
-    robot.attach_primitive(TorsoIdleMotion(robot, 50), 'torso_idle_motion')
+    robot.attach_primitive(UpperBodyIdleMotion(robot, 50), 'motion_upper_body_idle')
+    robot.attach_primitive(HeadIdleMotion(robot, 50), 'motion_head_idle')
+    robot.attach_primitive(TorsoIdleMotion(robot, 50), 'motion_torso_idle')
 
     robot.attach_primitive(Rest(robot), 'rest')
     robot.attach_primitive(Off(robot), 'off')

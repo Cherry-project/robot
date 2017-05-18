@@ -1,0 +1,12 @@
+[Unit]
+Description=Cherry project embed service for poppy torso roboy
+After=network.target
+
+[Service]
+User=root
+Restart=always
+Type=forking
+ExecStart=/home/poppy/robot/startupssh.sh
+
+[Install]
+WantedBy=multi-user.targe

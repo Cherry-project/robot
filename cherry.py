@@ -89,9 +89,9 @@ class Cherry(AbstractPoppyCreature):
             print "Primitives attached successfully"       
         
         try:
-            cls.robot.torso_idle_motion.start()
-            cls.robot.upper_body_idle_motion.start()
-            # cls.robot.head_idle_motion.start()
+            cls.robot.motion_torso_idle.start()
+            cls.robot.motion_upper_body_idle.start()
+            # cls.robot.motion_head_idle.start()
         except Exception as e:
             raise
         else:
@@ -221,7 +221,7 @@ class Cherry(AbstractPoppyCreature):
     @classmethod
     def learn(cls):
         move = MoveRecorder(cls.robot,100,cls.robot.motors)
-        cls.robot.compliant = True
+        cls.robot.off.start()
         raw_input("Press enter to start recording a Move.")
         
         for x in xrange(3,0,-1):
@@ -301,8 +301,5 @@ class Cherry(AbstractPoppyCreature):
         os.system("sudo kill -9 `sudo lsof -t -i:" + str(data['robot']['port']) + "`")
         os.system("sudo kill -9 $(ps -ax | grep python | awk '{print $1}')")
         sys.exit()
-
-
-
 
 

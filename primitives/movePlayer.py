@@ -20,9 +20,9 @@ class PlayMove(pypot.primitive.Primitive):
 	# main function that is call when the start method is launch
 	def run(self):
 		try:
-			self.robot.upper_body_idle_motion.stop()
-			self.robot.torso_idle_motion.stop()
-			# self.robot.head_idle_motion.stop()
+			self.robot.motion_upper_body_idle.stop()
+			self.robot.motion_torso_idle.stop()
+			# self.robot.motion_head_idle.stop()
 		except:
 			pass
 		else:
@@ -53,9 +53,9 @@ class PlayMove(pypot.primitive.Primitive):
 	# function that is call once the run function has ended
 	def teardown(self):
 		try:
-			self.robot.upper_body_idle_motion.start()
-			self.robot.torso_idle_motion.start()
-			# self.robot.head_idle_motion.start()
+			self.robot.motion_upper_body_idle.start()
+			self.robot.motion_torso_idle.start()
+			# self.robot.motion_head_idle.start()
 		except:
 			pass
 		else:

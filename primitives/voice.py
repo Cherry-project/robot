@@ -13,7 +13,7 @@ class Voice(object):
 		
 
 		# Proceed special caracteres
-		print HTMLParser().unescape(text).decode().encode('utf-8')
+		# print HTMLParser().unescape(text).decode().encode('utf-8')
 		text_encoded = HTMLParser().unescape(text).decode().encode('utf-8')
 
 		if len(text_encoded) >= 100:
