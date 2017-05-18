@@ -148,9 +148,9 @@ class Cherry(AbstractPoppyCreature):
         ipR = data['robot']['addr']
         portR = data['robot']['port']
 
-        data['type'] = "local"
-        with open('./config/conf.json','w') as f:
-            json.dump(data, f)
+        # data['type'] = "local"
+        # with open('./config/conf.json','w') as f:
+        #     json.dump(data, f)
 
         print "Starting to ping the server"
 
@@ -213,10 +213,10 @@ class Cherry(AbstractPoppyCreature):
                 data['robot']['port'] = 0
                 Voice.silent(text="Connect ssh failed",lang='en')
                 
-            data['type'] = "ssh"
-            with open('./config/conf.json','w') as f:
-                json.dump(data, f)
-            pass
+            # data['type'] = "ssh"
+            # with open('./config/conf.json','w') as f:
+            #     json.dump(data, f)
+            # pass
 
     @classmethod
     def learn(cls):
@@ -295,8 +295,9 @@ class Cherry(AbstractPoppyCreature):
             print "Request error"
 
         time.sleep(2)
-        if data['type'] == "ssh":
-            os.system("sudo pkill -x ssh")
+        # if data['type'] == "ssh":
+        #     os.system("sudo pkill -x ssh")
+        os.system("sudo pkill -x ssh")
         os.system("sudo kill -9 `sudo lsof -t -i:" + str(data['robot']['port']) + "`")
         os.system("sudo kill -9 $(ps -ax | grep python | awk '{print $1}')")
         sys.exit()
